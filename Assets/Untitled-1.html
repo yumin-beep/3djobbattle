@@ -1,0 +1,843 @@
+<title>로그라이크 가격 지표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  color-scheme: light;
+  --ground:      #f4f5f7;
+  --surface:     #ffffff;
+  --surface-sub: #eef0f4;
+  --ink:         #0f141b;
+  --ink-2:       #59636f;
+  --ink-3:       #8b95a1;
+  --hairline:    #e3e7ec;
+  --hairline-2:  #eff1f5;
+  --s1:          #2a78d6;
+  --s1-soft:     rgba(42,120,214,.13);
+  --s2:          #eb6834;
+  --s3:          #1baf7a;
+  --shadow:      0 1px 2px rgba(15,20,27,.05), 0 8px 24px -16px rgba(15,20,27,.22);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:      #12151a;
+    --surface:     #1b1f26;
+    --surface-sub: #232831;
+    --ink:         #eef1f5;
+    --ink-2:       #a8b2be;
+    --ink-3:       #78838f;
+    --hairline:    #2b313a;
+    --hairline-2:  #232830;
+    --s1:          #3987e5;
+    --s1-soft:     rgba(57,135,229,.18);
+    --s2:          #d95926;
+    --s3:          #199e70;
+    --shadow:      0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:      #12151a;
+  --surface:     #1b1f26;
+  --surface-sub: #232831;
+  --ink:         #eef1f5;
+  --ink-2:       #a8b2be;
+  --ink-3:       #78838f;
+  --hairline:    #2b313a;
+  --hairline-2:  #232830;
+  --s1:          #3987e5;
+  --s1-soft:     rgba(57,135,229,.18);
+  --s2:          #d95926;
+  --s3:          #199e70;
+  --shadow:      0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 28px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  padding: 76px 0 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 40px;
+  align-items: end;
+  border-bottom: 1px solid var(--hairline);
+}
+.eyebrow {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+h1 {
+  font-family: Archivo, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  margin: 14px 0 0;
+}
+.hero p {
+  margin: 16px 0 0;
+  max-width: 54ch;
+  color: var(--ink-2);
+}
+.hero-num {
+  text-align: right;
+  line-height: 1;
+}
+.hero-num .cap {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+  margin-bottom: 10px;
+}
+.hero-num .val {
+  font-family: Archivo, sans-serif;
+  font-weight: 800;
+  font-size: clamp(58px, 9vw, 92px);
+  letter-spacing: -.04em;
+  color: var(--s1);
+  font-variant-numeric: tabular-nums;
+}
+.hero-num .sub {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* ---------- kpi strip ---------- */
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kpi .k {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.kpi .v {
+  font-family: Archivo, sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.kpi .n { font-size: 12.5px; color: var(--ink-2); line-height: 1.45; }
+
+/* ---------- cards ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 24px 26px 22px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.card > header { margin-bottom: 4px; }
+.card h2 {
+  font-family: Archivo, sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -.017em;
+  margin: 8px 0 0;
+}
+.card .lede {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.plot { margin-top: 22px; position: relative; }
+.plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* svg text */
+.t-lab  { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--ink-3); }
+.t-val  { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500; fill: var(--ink-2); }
+.t-cat  { font-family: "IBM Plex Sans", sans-serif; font-size: 12.5px; fill: var(--ink); }
+.t-end  { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600; }
+.grid   { stroke: var(--hairline-2); stroke-width: 1; }
+.axis   { stroke: var(--hairline); stroke-width: 1; }
+
+/* legend */
+.legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+/* tooltip */
+.tip {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .1s;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 9px 11px;
+  box-shadow: 0 4px 18px -6px rgba(0,0,0,.4);
+  font-size: 12.5px;
+  white-space: nowrap;
+  z-index: 5;
+  min-width: 108px;
+}
+.tip .th {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 5px;
+}
+.tip .tr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+.tip .tr b { font-weight: 600; }
+.tip .tl { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+
+/* table view */
+details {
+  margin-top: 20px;
+  border-top: 1px solid var(--hairline-2);
+  padding-top: 12px;
+}
+summary {
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 4px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "+"; font-size: 13px; line-height: 1; }
+details[open] summary::before { content: "–"; }
+summary:hover { color: var(--ink); }
+summary:focus-visible { outline: 2px solid var(--s1); outline-offset: 3px; }
+.tbl-scroll { overflow-x: auto; margin-top: 12px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  text-align: right;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--hairline-2);
+  white-space: nowrap;
+}
+th {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  border-bottom: 1px solid var(--hairline);
+}
+th:first-child, td:first-child { text-align: left; }
+tbody tr:last-child td { border-bottom: none; }
+td.num { font-family: "IBM Plex Mono", monospace; }
+
+/* callout inside a card */
+.note {
+  margin-top: 18px;
+  padding: 13px 15px;
+  background: var(--s1-soft);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.note b { font-weight: 600; }
+
+/* year table card */
+.year-tbl td.y {
+  font-family: Archivo, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+.bar-cell { width: 34%; min-width: 130px; }
+.mini {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--s1);
+  display: block;
+}
+.mini-track { background: var(--surface-sub); border-radius: 4px; height: 8px; width: 100%; }
+
+/* discounts */
+.disc {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+.disc div { display: flex; flex-direction: column; gap: 4px; }
+.disc .dv {
+  font-family: Archivo, sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--s2);
+}
+.disc .dk {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+footer {
+  margin-top: 10px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+footer code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 860px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .disc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { grid-template-columns: minmax(0,1fr); align-items: start; }
+  .hero-num { text-align: left; }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 18px 64px; }
+  .card { padding: 20px 16px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Steam · 로그라이크 · 2023.08 – 2026.08</span>
+      <h1>로그라이크는 결국 6달러 아래에서 팔린다</h1>
+      <p>3년간 출시된 로그라이크 태그 게임 <b>5,778개</b>의 가격을 정리했습니다.
+         평균은 이상치에 끌려 올라가지만, 실제 시장이 모이는 지점은 중앙값 하나에 다 담겨 있습니다.</p>
+    </div>
+    <div class="hero-num">
+      <span class="cap">중앙값 / 유료 5,232개</span>
+      <span class="val">$5.99</span>
+      <span class="sub">평균 $8.57 · 표준편차 $12.19</span>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <span class="k">전체 게임</span>
+      <span class="v">5,778</span>
+      <span class="n">유료 5,232 · 무료 546 (9.4%)</span>
+    </div>
+    <div class="kpi">
+      <span class="k">$5 미만 비중</span>
+      <span class="v">45.4<span style="font-size:19px">%</span></span>
+      <span class="n">유료 게임 2,377개가 $4.99 이하</span>
+    </div>
+    <div class="kpi">
+      <span class="k">.99로 끝나는 가격</span>
+      <span class="v">95.9<span style="font-size:19px">%</span></span>
+      <span class="n">서로 다른 가격표는 155종뿐</span>
+    </div>
+    <div class="kpi">
+      <span class="k">현재 할인 중</span>
+      <span class="v">8.3<span style="font-size:19px">%</span></span>
+      <span class="n">434개 · 평균 38% 인하</span>
+    </div>
+  </div>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">얼마짜리가 제일 많은가</span>
+      <h2>가격대별 게임 수</h2>
+      <p class="lede">유료 게임의 77%가 $10 미만에 몰려 있습니다. $20을 넘기는 게임은 154개, 전체의 3%에 불과합니다.</p>
+    </header>
+    <div class="plot" id="p-bands"><div class="tip" id="tip-bands"></div></div>
+    <details>
+      <summary>표로 보기</summary>
+      <div class="tbl-scroll"><table id="t-bands"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">가격이 오르고 있나, 내리고 있나</span>
+      <h2>월별 평균가 · 중앙값 추이</h2>
+      <p class="lede">중앙값은 $5~7 사이에서 거의 움직이지 않습니다. 반면 평균가는 2024년의 출렁임을 지나 꾸준히 내려와 중앙값 쪽으로 붙고 있습니다 — 비싼 예외가 줄었다는 뜻입니다.</p>
+    </header>
+    <div class="plot" id="p-trend"><div class="tip" id="tip-trend"></div></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--s1)"></i>중앙값</span>
+      <span><i class="swatch" style="background:var(--s2)"></i>평균가</span>
+    </div>
+    <div class="note">연도별 평균가는 <b>2023년 $10.17 → 2026년 $7.63</b>으로 25% 내려왔지만, 중앙값은 <b>$4.99 → $5.99</b>로 오히려 올랐습니다. 시장 전체가 싸진 게 아니라 <b>극단적으로 비싼 게임이 사라진 것</b>입니다.</div>
+    <details>
+      <summary>표로 보기</summary>
+      <div class="tbl-scroll"><table id="t-trend"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">경쟁은 얼마나 심해졌나</span>
+      <h2>월별 출시 수</h2>
+      <p class="lede">월 100개 남짓이던 출시량이 3년 만에 3배가 됐습니다. 2026년 7월 한 달에만 343개가 나왔습니다.</p>
+    </header>
+    <div class="plot" id="p-vol"><div class="tip" id="tip-vol"></div></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--s1)"></i>유료</span>
+      <span><i class="swatch" style="background:var(--s3)"></i>무료</span>
+    </div>
+    <details>
+      <summary>표로 보기</summary>
+      <div class="tbl-scroll"><table id="t-vol"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">개발자들이 실제로 고르는 숫자</span>
+      <h2>가장 많이 쓰인 가격표 12개</h2>
+      <p class="lede">$4.99 하나가 유료 게임의 6분의 1을 차지합니다. 상위 12개 가격만으로 전체의 84%가 설명됩니다.</p>
+    </header>
+    <div class="plot" id="p-price"><div class="tip" id="tip-price"></div></div>
+    <details>
+      <summary>표로 보기</summary>
+      <div class="tbl-scroll"><table id="t-price"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">연도별 요약</span>
+      <h2>출시 연도로 나눠 본 가격</h2>
+    </header>
+    <div class="tbl-scroll">
+      <table class="year-tbl" id="t-year"></table>
+    </div>
+  </section>
+
+  <section class="card">
+    <header>
+      <span class="eyebrow">할인</span>
+      <h2>지금 세일 중인 게임</h2>
+      <p class="lede">할인은 흔하지 않지만, 한 번 하면 깊게 합니다. 할인 중인 434개의 중앙 할인율은 31%입니다.</p>
+    </header>
+    <div class="disc">
+      <div><span class="dv">434</span><span class="dk">할인 중</span></div>
+      <div><span class="dv">8.3%</span><span class="dk">할인 비율</span></div>
+      <div><span class="dv">38.0%</span><span class="dk">평균 할인율</span></div>
+      <div><span class="dv">95%</span><span class="dk">최대 할인율</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>5,778개 앱 · 정가 기준 · USD · 수집 2026-08-24</span>
+    <span><code>01_prices_clean.csv</code> 외 5개 집계 파일</span>
+  </footer>
+</div>
+
+<script>
+const DATA = {"top_prices":[{"p":4.99,"n":883,"pct":16.9},{"p":9.99,"n":574,"pct":11.0},{"p":2.99,"n":442,"pct":8.4},{"p":3.99,"n":366,"pct":7.0},{"p":1.99,"n":330,"pct":6.3},{"p":14.99,"n":325,"pct":6.2},{"p":5.99,"n":323,"pct":6.2},{"p":6.99,"n":289,"pct":5.5},{"p":7.99,"n":283,"pct":5.4},{"p":0.99,"n":264,"pct":5.0},{"p":19.99,"n":176,"pct":3.4},{"p":8.99,"n":150,"pct":2.9}],"nines":95.9,"distinct":155,"by_month":[{"m":"2023-08","paid":17,"free":6,"mean":7.4,"median":4.99},{"m":"2023-09","paid":72,"free":9,"mean":8.38,"median":4.99},{"m":"2023-10","paid":85,"free":12,"mean":10.76,"median":5.99},{"m":"2023-11","paid":98,"free":7,"mean":12.44,"median":6.99},{"m":"2023-12","paid":71,"free":7,"mean":8.83,"median":4.99},{"m":"2024-01","paid":97,"free":18,"mean":9.49,"median":4.99},{"m":"2024-02","paid":104,"free":14,"mean":10.15,"median":4.99},{"m":"2024-03","paid":100,"free":15,"mean":8.39,"median":4.99},{"m":"2024-04","paid":90,"free":21,"mean":8.64,"median":4.99},{"m":"2024-05","paid":120,"free":19,"mean":12.05,"median":6.99},{"m":"2024-06","paid":106,"free":11,"mean":13.34,"median":4.99},{"m":"2024-07","paid":106,"free":12,"mean":7.61,"median":5.0},{"m":"2024-08","paid":106,"free":15,"mean":7.95,"median":4.99},{"m":"2024-09","paid":109,"free":14,"mean":13.09,"median":7.99},{"m":"2024-10","paid":133,"free":14,"mean":10.49,"median":6.99},{"m":"2024-11","paid":149,"free":12,"mean":7.57,"median":5.99},{"m":"2024-12","paid":116,"free":17,"mean":8.17,"median":4.99},{"m":"2025-01","paid":103,"free":11,"mean":7.03,"median":4.99},{"m":"2025-02","paid":84,"free":14,"mean":8.07,"median":4.99},{"m":"2025-03","paid":140,"free":15,"mean":9.13,"median":5.99},{"m":"2025-04","paid":152,"free":19,"mean":9.49,"median":8.49},{"m":"2025-05","paid":128,"free":16,"mean":8.96,"median":7.49},{"m":"2025-06","paid":137,"free":16,"mean":8.15,"median":5.99},{"m":"2025-07","paid":153,"free":30,"mean":8.61,"median":6.99},{"m":"2025-08","paid":145,"free":19,"mean":8.6,"median":6.99},{"m":"2025-09","paid":144,"free":11,"mean":8.85,"median":6.99},{"m":"2025-10","paid":171,"free":21,"mean":7.43,"median":5.99},{"m":"2025-11","paid":230,"free":9,"mean":8.57,"median":6.99},{"m":"2025-12","paid":144,"free":12,"mean":6.61,"median":5.5},{"m":"2026-01","paid":128,"free":15,"mean":7.58,"median":6.49},{"m":"2026-02","paid":141,"free":12,"mean":7.63,"median":6.99},{"m":"2026-03","paid":283,"free":19,"mean":7.69,"median":5.99},{"m":"2026-04","paid":236,"free":15,"mean":7.85,"median":6.99},{"m":"2026-05","paid":217,"free":14,"mean":8.13,"median":6.99},{"m":"2026-06","paid":247,"free":18,"mean":7.18,"median":5.99},{"m":"2026-07","paid":321,"free":22,"mean":7.38,"median":5.99},{"m":"2026-08","paid":249,"free":15,"mean":7.74,"median":6.99}],"by_year":[{"y":"2023","n":343,"free":41,"mean":10.17,"median":4.99,"p90":18.99},{"y":"2024","n":1336,"free":182,"mean":9.73,"median":5.99,"p90":16.99},{"y":"2025","n":1731,"free":193,"mean":8.33,"median":5.99,"p90":14.99},{"y":"2026","n":1822,"free":130,"mean":7.63,"median":5.99,"p90":14.99}],"bands":[{"b":"0. Free","apps":546,"pct_all":"9.4%","pct_paid":""},{"b":"1. $0.01-4.99","apps":2377,"pct_all":"41.1%","pct_paid":"45.4%"},{"b":"2. $5-9.99","apps":1682,"pct_all":"29.1%","pct_paid":"32.1%"},{"b":"3. $10-14.99","apps":713,"pct_all":"12.3%","pct_paid":"13.6%"},{"b":"4. $15-19.99","apps":306,"pct_all":"5.3%","pct_paid":"5.8%"},{"b":"5. $20-29.99","apps":114,"pct_all":"2.0%","pct_paid":"2.2%"},{"b":"6. $30+","apps":40,"pct_all":"0.7%","pct_paid":"0.8%"}],"overall":[{"scope":"paid / list price","n":"5232","mean":"8.57","median":"5.99","stdev":"12.19","min":"0.99","p10":"1.99","p25":"3.99","p75":"9.99","p90":"14.99","max":"199.99"},{"scope":"paid / current price","n":"5232","mean":"8.17","median":"5.99","stdev":"11.51","min":"0.49","p10":"1.99","p25":"3.99","p75":"9.99","p90":"14.99","max":"199.99"},{"scope":"paid / list price, excl. >=$100","n":"5216","mean":"7.98","median":"5.99","stdev":"6.03","min":"0.99","p10":"1.99","p25":"3.99","p75":"9.99","p90":"14.99","max":"69.99"},{"scope":"all incl. free / list price","n":"5778","mean":"7.76","median":"4.99","stdev":"11.87","min":"0.00","p10":"0.99","p25":"2.99","p75":"9.99","p90":"14.99","max":"199.99"}],"disc":{"paid apps":"5232","currently discounted":"434","discount rate":"8.3%","mean discount % (discounted only)":"38.0","median discount % (discounted only)":"31.2","max discount %":"95.0"}};
+
+const NS = "http://www.w3.org/2000/svg";
+const el = (n, a = {}) => {
+  const e = document.createElementNS(NS, n);
+  for (const k in a) e.setAttribute(k, a[k]);
+  return e;
+};
+const money = v => "$" + v.toFixed(2);
+const comma = v => v.toLocaleString("en-US");
+
+/* rounded-rect path: r applied only to the listed corners (tl,tr,br,bl) */
+function rr(x, y, w, h, r, c) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  const [tl, tr, br, bl] = c.map(v => (v ? r : 0));
+  return `M${x + tl},${y}H${x + w - tr}${tr ? `a${tr},${tr} 0 0 1 ${tr},${tr}` : ""}`
+       + `V${y + h - br}${br ? `a${br},${br} 0 0 1 ${-br},${br}` : ""}`
+       + `H${x + bl}${bl ? `a${bl},${bl} 0 0 1 ${-bl},${-bl}` : ""}`
+       + `V${y + tl}${tl ? `a${tl},${tl} 0 0 1 ${tl},${-tl}` : ""}Z`;
+}
+
+function mkSvg(host, w, h) {
+  const s = el("svg", { viewBox: `0 0 ${w} ${h}`, role: "img" });
+  host.insertBefore(s, host.firstChild);
+  return s;
+}
+
+/* tooltip helper — positions inside the .plot box */
+function tipper(plotEl, tipEl) {
+  return {
+    show(html, px, py) {
+      tipEl.innerHTML = html;
+      tipEl.style.opacity = "1";
+      const box = plotEl.getBoundingClientRect();
+      const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+      let x = px + 14, y = py - th - 10;
+      if (x + tw > box.width) x = px - tw - 14;
+      if (y < 0) y = py + 16;
+      tipEl.style.left = x + "px";
+      tipEl.style.top = y + "px";
+    },
+    hide() { tipEl.style.opacity = "0"; }
+  };
+}
+const localXY = (plotEl, ev) => {
+  const b = plotEl.getBoundingClientRect();
+  return [ev.clientX - b.left, ev.clientY - b.top];
+};
+
+/* ===================== 1. price bands — horizontal bars ===================== */
+(function () {
+  const host = document.getElementById("p-bands");
+  const tip = tipper(host, document.getElementById("tip-bands"));
+  const rows = DATA.bands.map(b => ({
+    name: b.b.replace(/^\d+\.\s*/, "").replace("Free", "무료").replace("$0.01-4.99", "$0.99–4.99"),
+    n: b.apps, pctAll: b.pct_all, pctPaid: b.pct_paid
+  }));
+
+  const W = 1000, rowH = 46, padT = 6, padB = 4;
+  const H = padT + rows.length * rowH + padB;
+  const labW = 132, valW = 96;
+  const x0 = labW, x1 = W - valW;
+  const max = Math.max(...rows.map(r => r.n));
+  const svg = mkSvg(host, W, H);
+  svg.setAttribute("aria-label", "가격대별 게임 수 막대그래프");
+
+  rows.forEach((r, i) => {
+    const cy = padT + i * rowH + rowH / 2;
+    const bh = 22;
+    const bw = Math.max(3, (r.n / max) * (x1 - x0));
+
+    const lab = el("text", { x: x0 - 14, y: cy + 4.5, "text-anchor": "end", class: "t-cat" });
+    lab.textContent = r.name;
+    svg.appendChild(lab);
+
+    svg.appendChild(el("rect", {
+      x: x0, y: cy - bh / 2, width: x1 - x0, height: bh, rx: 4,
+      fill: "var(--surface-sub)"
+    }));
+
+    const bar = el("path", {
+      d: rr(x0, cy - bh / 2, bw, bh, 4, [false, true, true, false]),
+      fill: r.name === "무료" ? "var(--s3)" : "var(--s1)"
+    });
+    svg.appendChild(bar);
+
+    const v = el("text", { x: x1 + 12, y: cy + 4.5, class: "t-val" });
+    v.textContent = comma(r.n) + "  ·  " + r.pctAll;
+    svg.appendChild(v);
+
+    const hit = el("rect", { x: 0, y: cy - rowH / 2, width: W, height: rowH, fill: "transparent" });
+    hit.style.cursor = "default";
+    hit.addEventListener("mousemove", e => {
+      const [mx, my] = localXY(host, e);
+      tip.show(
+        `<div class="th">${r.name}</div>
+         <div class="tr"><span class="tl">게임 수</span><b>${comma(r.n)}</b></div>
+         <div class="tr"><span class="tl">전체 대비</span><b>${r.pctAll}</b></div>
+         ${r.pctPaid ? `<div class="tr"><span class="tl">유료 대비</span><b>${r.pctPaid}</b></div>` : ""}`,
+        mx, my);
+    });
+    hit.addEventListener("mouseleave", tip.hide);
+    svg.appendChild(hit);
+  });
+
+  const t = document.getElementById("t-bands");
+  t.innerHTML = "<thead><tr><th>가격대</th><th>게임 수</th><th>전체 대비</th><th>유료 대비</th></tr></thead><tbody>"
+    + rows.map(r => `<tr><td>${r.name}</td><td class="num">${comma(r.n)}</td><td class="num">${r.pctAll}</td><td class="num">${r.pctPaid || "—"}</td></tr>`).join("")
+    + "</tbody>";
+})();
+
+/* ===================== 2. monthly trend — 2-series line ===================== */
+(function () {
+  const host = document.getElementById("p-trend");
+  const tip = tipper(host, document.getElementById("tip-trend"));
+  const d = DATA.by_month;
+
+  const W = 1000, H = 330;
+  const mL = 44, mR = 66, mT = 14, mB = 34;
+  const iw = W - mL - mR, ih = H - mT - mB;
+  const yMax = 15;
+  const X = i => mL + (i / (d.length - 1)) * iw;
+  const Y = v => mT + ih - (v / yMax) * ih;
+
+  const svg = mkSvg(host, W, H);
+  svg.setAttribute("aria-label", "월별 평균가와 중앙값 추이 선그래프");
+
+  for (let v = 0; v <= yMax; v += 5) {
+    svg.appendChild(el("line", { x1: mL, x2: mL + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+    const tx = el("text", { x: mL - 12, y: Y(v) + 4, "text-anchor": "end", class: "t-lab" });
+    tx.textContent = "$" + v;
+    svg.appendChild(tx);
+  }
+
+  d.forEach((m, i) => {
+    if (!m.m.endsWith("-01") && i !== 0) return;
+    const tx = el("text", { x: X(i), y: H - 12, "text-anchor": "middle", class: "t-lab" });
+    tx.textContent = i === 0 ? m.m.replace("-", ".") : m.m.slice(0, 4);
+    svg.appendChild(tx);
+    svg.appendChild(el("line", { x1: X(i), x2: X(i), y1: mT, y2: mT + ih, class: "grid" }));
+  });
+
+  const line = (key, color) => {
+    const dPath = d.map((m, i) => (i ? "L" : "M") + X(i).toFixed(1) + "," + Y(m[key]).toFixed(1)).join("");
+    svg.appendChild(el("path", {
+      d: dPath, fill: "none", stroke: color, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round"
+    }));
+    const last = d[d.length - 1];
+    svg.appendChild(el("circle", { cx: X(d.length - 1), cy: Y(last[key]), r: 4.5, fill: color, stroke: "var(--surface)", "stroke-width": 2 }));
+    const lab = el("text", { x: X(d.length - 1) + 12, y: Y(last[key]) + 4, class: "t-end", fill: color });
+    lab.textContent = money(last[key]);
+    svg.appendChild(lab);
+  };
+  line("mean", "var(--s2)");
+  line("median", "var(--s1)");
+
+  const cross = el("line", { x1: 0, x2: 0, y1: mT, y2: mT + ih, stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "3 3", opacity: 0 });
+  svg.appendChild(cross);
+  const dot1 = el("circle", { r: 5, fill: "var(--s1)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+  const dot2 = el("circle", { r: 5, fill: "var(--s2)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0 });
+  svg.appendChild(dot1); svg.appendChild(dot2);
+
+  const overlay = el("rect", { x: mL, y: mT, width: iw, height: ih, fill: "transparent" });
+  overlay.addEventListener("mousemove", e => {
+    const [mx, my] = localXY(host, e);
+    const scale = W / host.clientWidth;
+    const i = Math.max(0, Math.min(d.length - 1, Math.round(((mx * scale) - mL) / iw * (d.length - 1))));
+    const m = d[i];
+    cross.setAttribute("x1", X(i)); cross.setAttribute("x2", X(i)); cross.setAttribute("opacity", .55);
+    dot1.setAttribute("cx", X(i)); dot1.setAttribute("cy", Y(m.median)); dot1.setAttribute("opacity", 1);
+    dot2.setAttribute("cx", X(i)); dot2.setAttribute("cy", Y(m.mean)); dot2.setAttribute("opacity", 1);
+    tip.show(
+      `<div class="th">${m.m.replace("-", ".")}</div>
+       <div class="tr"><span class="tl"><i class="swatch" style="background:var(--s1)"></i>중앙값</span><b>${money(m.median)}</b></div>
+       <div class="tr"><span class="tl"><i class="swatch" style="background:var(--s2)"></i>평균가</span><b>${money(m.mean)}</b></div>
+       <div class="tr"><span class="tl">유료 출시</span><b>${m.paid}개</b></div>`,
+      mx, my);
+  });
+  overlay.addEventListener("mouseleave", () => {
+    tip.hide(); cross.setAttribute("opacity", 0);
+    dot1.setAttribute("opacity", 0); dot2.setAttribute("opacity", 0);
+  });
+  svg.appendChild(overlay);
+
+  document.getElementById("t-trend").innerHTML =
+    "<thead><tr><th>월</th><th>중앙값</th><th>평균가</th><th>유료 출시</th><th>무료 출시</th></tr></thead><tbody>"
+    + d.map(m => `<tr><td class="num">${m.m}</td><td class="num">${money(m.median)}</td><td class="num">${money(m.mean)}</td><td class="num">${m.paid}</td><td class="num">${m.free}</td></tr>`).join("")
+    + "</tbody>";
+})();
+
+/* ===================== 3. monthly volume — stacked bars ===================== */
+(function () {
+  const host = document.getElementById("p-vol");
+  const tip = tipper(host, document.getElementById("tip-vol"));
+  const d = DATA.by_month;
+
+  const W = 1000, H = 300;
+  const mL = 44, mR = 14, mT = 14, mB = 34;
+  const iw = W - mL - mR, ih = H - mT - mB;
+  const yMax = 360;
+  const step = iw / d.length;
+  const bw = step - 5;
+  const Y = v => mT + ih - (v / yMax) * ih;
+
+  const svg = mkSvg(host, W, H);
+  svg.setAttribute("aria-label", "월별 출시 수 누적 막대그래프");
+
+  for (let v = 0; v <= yMax; v += 90) {
+    svg.appendChild(el("line", { x1: mL, x2: mL + iw, y1: Y(v), y2: Y(v), class: v === 0 ? "axis" : "grid" }));
+    const tx = el("text", { x: mL - 12, y: Y(v) + 4, "text-anchor": "end", class: "t-lab" });
+    tx.textContent = v;
+    svg.appendChild(tx);
+  }
+
+  d.forEach((m, i) => {
+    const x = mL + i * step + 2.5;
+    const total = m.paid + m.free;
+    const hPaid = (m.paid / yMax) * ih;
+    const hFree = (m.free / yMax) * ih;
+    const yFreeTop = Y(total);
+
+    /* free sits on top, rounded end; 2px surface gap between the segments */
+    svg.appendChild(el("path", { d: rr(x, yFreeTop, bw, Math.max(2, hFree), 4, [true, true, false, false]), fill: "var(--s3)" }));
+    svg.appendChild(el("path", { d: rr(x, yFreeTop + hFree + 2, bw, Math.max(2, hPaid - 2), 0, [false, false, false, false]), fill: "var(--s1)" }));
+
+    if (m.m.endsWith("-01") || i === 0) {
+      const tx = el("text", { x: x + bw / 2, y: H - 12, "text-anchor": "middle", class: "t-lab" });
+      tx.textContent = i === 0 ? m.m.replace("-", ".") : m.m.slice(0, 4);
+      svg.appendChild(tx);
+    }
+
+    const hit = el("rect", { x: mL + i * step, y: mT, width: step, height: ih, fill: "transparent" });
+    hit.addEventListener("mousemove", e => {
+      const [mx, my] = localXY(host, e);
+      tip.show(
+        `<div class="th">${m.m.replace("-", ".")}</div>
+         <div class="tr"><span class="tl">전체</span><b>${total}개</b></div>
+         <div class="tr"><span class="tl"><i class="swatch" style="background:var(--s1)"></i>유료</span><b>${m.paid}</b></div>
+         <div class="tr"><span class="tl"><i class="swatch" style="background:var(--s3)"></i>무료</span><b>${m.free}</b></div>`,
+        mx, my);
+    });
+    hit.addEventListener("mouseleave", tip.hide);
+    svg.appendChild(hit);
+  });
+
+  document.getElementById("t-vol").innerHTML =
+    "<thead><tr><th>월</th><th>전체</th><th>유료</th><th>무료</th></tr></thead><tbody>"
+    + d.map(m => `<tr><td class="num">${m.m}</td><td class="num">${m.paid + m.free}</td><td class="num">${m.paid}</td><td class="num">${m.free}</td></tr>`).join("")
+    + "</tbody>";
+})();
+
+/* ===================== 4. top price points — horizontal bars ===================== */
+(function () {
+  const host = document.getElementById("p-price");
+  const tip = tipper(host, document.getElementById("tip-price"));
+  const d = DATA.top_prices;
+
+  const W = 1000, rowH = 34, padT = 4, padB = 4;
+  const H = padT + d.length * rowH + padB;
+  const labW = 92, valW = 108;
+  const x0 = labW, x1 = W - valW;
+  const max = Math.max(...d.map(r => r.n));
+  const svg = mkSvg(host, W, H);
+  svg.setAttribute("aria-label", "가장 많이 쓰인 가격표 막대그래프");
+
+  d.forEach((r, i) => {
+    const cy = padT + i * rowH + rowH / 2;
+    const bh = 18;
+    const bw = Math.max(3, (r.n / max) * (x1 - x0));
+
+    const lab = el("text", { x: x0 - 14, y: cy + 4.5, "text-anchor": "end", class: "t-end", fill: "var(--ink)" });
+    lab.textContent = money(r.p);
+    svg.appendChild(lab);
+
+    svg.appendChild(el("path", {
+      d: rr(x0, cy - bh / 2, bw, bh, 4, [false, true, true, false]),
+      fill: "var(--s1)"
+    }));
+
+    const v = el("text", { x: x0 + bw + 12, y: cy + 4.5, class: "t-val" });
+    v.textContent = comma(r.n) + "개  ·  " + r.pct.toFixed(1) + "%";
+    svg.appendChild(v);
+
+    const hit = el("rect", { x: 0, y: cy - rowH / 2, width: W, height: rowH, fill: "transparent" });
+    hit.addEventListener("mousemove", e => {
+      const [mx, my] = localXY(host, e);
+      tip.show(
+        `<div class="th">${money(r.p)}</div>
+         <div class="tr"><span class="tl">게임 수</span><b>${comma(r.n)}</b></div>
+         <div class="tr"><span class="tl">유료 대비</span><b>${r.pct.toFixed(1)}%</b></div>`,
+        mx, my);
+    });
+    hit.addEventListener("mouseleave", tip.hide);
+    svg.appendChild(hit);
+  });
+
+  document.getElementById("t-price").innerHTML =
+    "<thead><tr><th>가격</th><th>게임 수</th><th>유료 대비</th></tr></thead><tbody>"
+    + d.map(r => `<tr><td class="num">${money(r.p)}</td><td class="num">${comma(r.n)}</td><td class="num">${r.pct.toFixed(1)}%</td></tr>`).join("")
+    + "</tbody>";
+})();
+
+/* ===================== 5. by-year table ===================== */
+(function () {
+  const d = DATA.by_year;
+  const maxN = Math.max(...d.map(r => r.n));
+  document.getElementById("t-year").innerHTML =
+    `<thead><tr><th>연도</th><th class="bar-cell">출시 수</th><th>무료</th><th>중앙값</th><th>평균가</th><th>상위 10%</th></tr></thead><tbody>`
+    + d.map(r => `<tr>
+        <td class="y">${r.y}</td>
+        <td class="bar-cell">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="mini-track"><span class="mini" style="width:${(r.n / maxN * 100).toFixed(1)}%"></span></span>
+            <span class="num" style="min-width:44px;text-align:right">${comma(r.n)}</span>
+          </div>
+        </td>
+        <td class="num">${r.free}</td>
+        <td class="num">${money(r.median)}</td>
+        <td class="num">${money(r.mean)}</td>
+        <td class="num">${money(r.p90)}</td>
+      </tr>`).join("")
+    + "</tbody>";
+})();
+</script>

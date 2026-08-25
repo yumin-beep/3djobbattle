@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-/// 직업과 정체성(사람=플레이어 프로퍼티, AI=인스턴스 데이터) + 색상, 피격 플래시, 사망 숨김.
-/// 사람과 AI를 통합해 다루는 창구: Actor / Job / DisplayName
+/// 직업과 정체성(사람=플레이어 프로퍼티, AI=인스턴스 데이터) + 비주얼 전환, 피격 플래시, 사망 숨김.
+/// 캐릭터 모델이 있는 직업(현재 빵집사장=고양이)은 모델을, 나머지는 직업 색 캡슐을 보여준다.
 public class PlayerJob : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
 {
     public bool IsBot { get; private set; }
@@ -13,13 +14,18 @@ public class PlayerJob : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
     private JobType botJob = JobType.None;
     private JobType humanJob = JobType.None;
 
-    private Renderer[] renderers;
+    private GameObject capsuleVisual;   // 자식 "Visual_Capsule" (기본)
+    private GameObject bakerCatVisual;  // 자식 "Visual_BakerCat" (빵집사장 모델)
+    private Renderer[] activeRenderers = System.Array.Empty<Renderer>();
+    private readonly Dictionary<Renderer, Color> baseColors = new();
+
     private PlayerHealth health;
-    private Color baseColor = Color.white;
     private float flashUntil;
     private bool flashing;
     private bool deadShown;
     private int lastHp;
+
+    private static readonly Color FlashColor = new(1f, 0.3f, 0.25f);
 
     /// 사람은 Photon 액터 번호, AI는 1000번대 가상 번호
     public int Actor => IsBot ? botActor : (photonView.Owner != null ? photonView.Owner.ActorNumber : -1);
@@ -37,8 +43,11 @@ public class PlayerJob : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
 
     private void Awake()
     {
-        renderers = GetComponentsInChildren<Renderer>(true);
         health = GetComponent<PlayerHealth>();
+        var capsule = transform.Find("Visual_Capsule");
+        capsuleVisual = capsule != null ? capsule.gameObject : null;
+        var cat = transform.Find("Visual_BakerCat");
+        bakerCatVisual = cat != null ? cat.gameObject : null;
     }
 
     public void OnPhotonInstantiate(PhotonMessageInfo info)
@@ -88,14 +97,44 @@ public class PlayerJob : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
     private void Refresh()
     {
         if (!IsBot) humanJob = GameManager.JobOf(photonView.Owner);
-        ApplyColor(JobDatabase.Get(Job).color);
+        ApplyVisual();
     }
 
-    private void ApplyColor(Color color)
+    /// 직업에 맞는 비주얼 선택 + 색/렌더러 목록 재구성
+    private void ApplyVisual()
     {
-        baseColor = color;
+        bool useCat = Job == JobType.Baker && bakerCatVisual != null;
+        if (bakerCatVisual != null) bakerCatVisual.SetActive(useCat);
+        if (capsuleVisual != null) capsuleVisual.SetActive(!useCat);
+
+        GameObject visualRoot = useCat ? bakerCatVisual : capsuleVisual;
+        if (visualRoot == null) visualRoot = gameObject; // 구버전 프리팹 호환
+
+        baseColors.Clear();
+        activeRenderers = visualRoot.GetComponentsInChildren<Renderer>(true);
+        Color jobColor = JobDatabase.Get(Job).color;
+        bool dead = health != null && health.IsDead;
+
+        foreach (var r in activeRenderers)
+        {
+            if (useCat)
+            {
+                // 모델은 자기 텍스처 색 유지
+                baseColors[r] = r.material.GetColor("_BaseColor");
+            }
+            else
+            {
+                r.material.SetColor("_BaseColor", jobColor);
+                baseColors[r] = jobColor;
+            }
+            r.enabled = !dead;
+        }
+
         flashing = false;
-        foreach (var r in renderers) r.material.SetColor("_BaseColor", color);
+        deadShown = dead;
+
+        var pa = GetComponent<PlayerAnimator>();
+        if (pa != null) pa.RefreshAnimator();
     }
 
     private void Update()
@@ -108,15 +147,20 @@ public class PlayerJob : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
         if (flash != flashing)
         {
             flashing = flash;
-            Color c = flash ? Color.Lerp(baseColor, Color.white, 0.85f) : baseColor;
-            foreach (var r in renderers) r.material.SetColor("_BaseColor", c);
+            foreach (var r in activeRenderers)
+            {
+                if (r == null) continue;
+                Color c = flash ? Color.Lerp(baseColors[r], FlashColor, 0.7f) : baseColors[r];
+                r.material.SetColor("_BaseColor", c);
+            }
         }
 
         // 사망 시 숨김
         if (health.IsDead != deadShown)
         {
             deadShown = health.IsDead;
-            foreach (var r in renderers) r.enabled = !deadShown;
+            foreach (var r in activeRenderers)
+                if (r != null) r.enabled = !deadShown;
         }
     }
 }

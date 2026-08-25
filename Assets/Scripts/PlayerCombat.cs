@@ -84,6 +84,7 @@ public class PlayerCombat : MonoBehaviourPun
 
     private void Execute(int slot, Vector3 dir)
     {
+        photonView.RPC(nameof(RpcAttackAnim), RpcTarget.All);
         switch (job.Job)
         {
             case JobType.Baker:
@@ -229,6 +230,13 @@ public class PlayerCombat : MonoBehaviourPun
 
     [PunRPC]
     private void RpcSelfFx(Vector3 colorV) => HitPuff.Create(transform.position + Vector3.up, 1.6f, FromV3(colorV), 0.35f);
+
+    [PunRPC]
+    private void RpcAttackAnim()
+    {
+        var pa = GetComponent<PlayerAnimator>();
+        if (pa != null) pa.PlayAttack();
+    }
 
     // Photon RPC는 Color를 직접 못 보내므로 Vector3로 변환
     private static Vector3 ToV3(Color c) => new(c.r, c.g, c.b);
