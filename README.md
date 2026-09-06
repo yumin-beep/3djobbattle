@@ -1,13 +1,17 @@
 # 직업대전 (Job Battle)
 
-![직업대전 대표 이미지](Docs/images/job-battle-cover.jpg)
+> 현재 개발 중인 1인 제작 프로토타입임. 기능과 화면은 계속 수정하고 있음.
+
+![직업대전 개발 화면](Docs/images/job-battle-development.png)
+
+화면에 보이는 빵집 사장 캐릭터를 Blender로 직접 모델링해 Unity에 적용했음.
 
 현대 직업 캐릭터들이 싸우는 4인 점령전 게임을 만들었음.
 
-- 기간: 2026.08.01 ~ 2026.09.04
+- 기간: 2026.08.01 ~ 진행 중
 - 인원: 1명
-- 사용 기술: Unity 6, C#, Photon PUN 2
-- 현재 상태: 핵심 기능을 구현한 프로토타입임
+- 사용 기술: Unity 6, C#, Photon PUN 2, Blender
+- 현재 상태: 온라인 접속과 기본 전투, 점령 기능을 구현하며 개발 중임
 
 [macOS 프로토타입 받기](https://github.com/yumin-beep/3djobbattle/releases/tag/v0.1.0-prototype)
 
@@ -18,8 +22,6 @@
 - 5분 동안 점령 시간을 가장 많이 쌓은 사람이 이기는 방식임.
 - 사람이 부족하면 AI 봇이 빈자리를 채움.
 
-![직업대전 프로토타입 실행 화면](Docs/images/job-battle-prototype.png)
-
 ## 만든 기능과 구현 방식
 
 - Photon PUN 2로 방 생성과 4인 접속을 구현함.
@@ -28,7 +30,7 @@
 - HP, 사망과 버프 상태는 `IPunObservable`로 다른 접속자에게 동기화했음.
 - `CapturePoint`에서 한 명만 들어와 있는지 확인하고 3초 점령 시간과 점수를 관리했음.
 - 방장 클라이언트에서 `BotBrain`을 실행해 AI가 점령지와 가까운 적을 판단하게 했음.
-- 캐릭터 모델을 만든 뒤 Unity에 넣고 동작을 직접 확인했음.
+- 빵집 사장 캐릭터를 Blender로 직접 모델링한 뒤 Unity에 넣고 동작을 확인했음.
 
 ## 현재 상태
 
